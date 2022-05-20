@@ -1,7 +1,7 @@
 FROM node:lts
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /usr/src/kafka_consumer
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
@@ -14,7 +14,7 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-EXPOSE 8080
+EXPOSE 8080/tcp 8081/tcp
 
 CMD [ "node", "server.js" ]
 

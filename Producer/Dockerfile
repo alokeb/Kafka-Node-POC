@@ -1,7 +1,7 @@
 FROM node:latest
 
 # Create app directory
-WORKDIR /usr/src/app
+WORKDIR /usr/src/kafka_producer
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
@@ -14,7 +14,6 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-EXPOSE 8080/tcp
-EXPOSE 80/tcp
+EXPOSE 8080/tcp 8080/tcp
 
 CMD [ "node", "server.js" ]
