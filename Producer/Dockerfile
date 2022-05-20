@@ -15,6 +15,4 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-EXPOSE 8080/tcp 8080/tcp
-
 CMD [ "node", "producer.js" ]
