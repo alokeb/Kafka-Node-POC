@@ -1,8 +1,0 @@
-producer:
-    build: .
-    command: bash -c "sleep 4 && /kafka/bin/kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 3 --partitions 2 --topic dates && while true; do date | /kafka/bin/kafka-console-producer.sh --broker-list kafka1:9092,kafka2:9092,kafka3:9092 --topic dates; sleep 1; done "
-    depends_on:
-    - zookeeper
-    - kafka1
-    - kafka2
-    - kafka3
