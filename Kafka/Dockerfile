@@ -4,6 +4,9 @@ FROM openjdk:latest
 #Kafka Version set to 3.20 (latest version as of now)
 FROM bitnami/kafka:latest
 ARG brokerId=1
+
+ENV 
+    ALLOW_PLAINTEXT_LISTENER=yes
  
 #RUN tar -xzf kafka_2.13-3.2.0.tgz && \
  #   mv /kafka_2.13-3.2.0.tgz /kafka && \
