@@ -14,7 +14,5 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-EXPOSE 8080/tcp 8081/tcp
-
-CMD [ "node", "server.js" ]
+CMD [ "node", "consumer.js" ]
 

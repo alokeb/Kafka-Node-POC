@@ -1,32 +1,35 @@
-zookeeper:
-    build: .
-    command: /kafka/bin/zookeeper-server-start.sh /kafka/config/zookeeper.properties
+version: "2"
+
+services:
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
     ports:
-    - 2181:2181
-
-kafka2:
-    build:
-        context: .
-        args:
-            brokerId: 2
-    command: /kafka/bin/kafka-server-start.sh /kafka/config/server.properties
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: docker.io/bitnami/kafka:3.1
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
     depends_on:
-    - zookeeper
+      - zookeeper
 
-producer:
-    build: .
-    command: bash -c "sleep 4 && /kafka/bin/kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 3 --partitions 2 --topic dates && while true; do date | /kafka/bin/kafka-console-producer.sh --broker-list kafka1:9092,kafka2:9092,kafka3:9092 --topic dates; sleep 1; done "
-    depends_on:
-    - zookeeper
-    - kafka1
-    - kafka2
-    - kafka3
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
 
-consumer:
-    build: .
-    command: bash -c "sleep 6 && /kafka/bin/kafka-console-consumer.sh --topic dates --bootstrap-server kafka1:9092,kafka2:9092,kafka3:9092"
-    depends_on:
-    - zookeeper
-    - kafka1
-    - kafka2
-    - kafka3
+#Update and uncomment settings below to configure your persistent storage
+#kafka:
+#  ...
+#  volumes:
+#    - /path/to/kafka-persistence:/bitnami/kafka
+#  ...

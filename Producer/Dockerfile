@@ -16,4 +16,4 @@ COPY . .
 
 EXPOSE 8080/tcp 8080/tcp
 
-CMD [ "node", "server.js" ]
+CMD [ "node", "producer.js" ]
