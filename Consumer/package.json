@@ -1,0 +1,13 @@
+{
+    "name": "kafka_producer_demo",
+    "version": "1.0.0",
+    "description": "Demo Node.js Producer app for Kafka integration",
+    "author": "Aloke Bhatnagar <alokeb@gmail.com>",
+    "main": "server.js",
+    "scripts": {
+      "start": "node server.js"
+    },
+    "dependencies": {
+      "express": "^4.16.1"
+    }
+  }
