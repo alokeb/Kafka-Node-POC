@@ -2,7 +2,7 @@
 FROM oraclelinux:lts
 FROM openjdk:latest
 #Kafka Version set to 3.20 (latest version as of now)
-FROM kafka:3.2.0
+FROM bitnami/kafka:latest
 ARG brokerId=1
  
 #RUN tar -xzf kafka_2.13-3.2.0.tgz && \
