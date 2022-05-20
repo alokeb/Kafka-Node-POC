@@ -1,16 +1,40 @@
-'use strict';
+const readline = require('readline');
+const kafka = require('kafka-node'),
+  
+Producer = kafka.Producer,
+client = new kafka.KafkaClient(),
+producer = new Producer(client);
 
-const express = require('express');
-
-// Constants
-const PORT = 8080;
-const HOST = '0.0.0.0';
-
-// App
-const app = express();
-app.get('/', (req, res) => {
-  res.send('Hello World');
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+producer.on('ready', () => {
+  const waitForUserInput = () => {
+    rl.question('Command: ', (answer) => {
+      if (answer == 'exit') {
+        rl.close();
+      } else if (isNaN(answer)) {
+        waitForUserInput();
+      } else {
+        let payload = [
+          {
+            topic: 'topic_stream',
+            messages: answer,
+          }
+        ];
+        producer.send(payload, (err, data) => {
+          waitForUserInput();
+        });
+      }
+    });
+    rl.on('SIGINT', () => {
+      rl.close();
+    });
+  }
+  waitForUserInput();
 });
 
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
+producer.on('error', (err) => {
+  console.log(err);
+});
