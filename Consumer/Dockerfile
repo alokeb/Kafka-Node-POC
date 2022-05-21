@@ -1,7 +1,7 @@
 FROM node:lts
 
 # Create app directory
-WORKDIR /usr/src/kafka_consumer
+WORKDIR /usr/src/kafka_producer
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
