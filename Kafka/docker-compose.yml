@@ -1,8 +1,26 @@
 version: "2"
 
+#Create an explicit bridge network
+networks:
+  kafka-bridge:
+    driver: bridge
+
 services:
-   kafka:
-    image: docker.io/bitnami/kafka:3.1
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
+    networks:
+      - kafka-bridge
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.2
+    networks:
+      - kafka-bridge
     ports:
       - "9092:9092"
     volumes:
@@ -13,7 +31,12 @@ services:
     depends_on:
       - zookeeper
 
-#Update these to persistent storage if necessary
 volumes:
+  zookeeper_data:
+    #For persistent storage mount your storage location to /zookeeper/storage
+    # - /path/to/zookeeper-persistence:/zookeeper/storage
+    driver: local
   kafka_data:
+    #For persistent storage mount your storage location to /kafka/storage
+    # - /path/to/kafka-persistence:/kafka/storage
     driver: local

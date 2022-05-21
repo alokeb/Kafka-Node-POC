@@ -6,7 +6,7 @@ const app = express();
 const Consumer = kafka.Consumer,
  client = new kafka.KafkaClient('localhost:9092'),
  consumer = new Consumer(
- client, [ { topic: 'topic_stream', partition: 0 } ], { autoCommit: false });
+ client, [ { topic: 'kafka-producer-consumer', partition: 0 } ], { autoCommit: false });
 
 const server = app.listen(port, () => {
   console.log(`Listening on port ${server.address().port}`);

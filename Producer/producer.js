@@ -1,40 +1,45 @@
-const readline = require('readline');
-const kafka = require('kafka-node'),
-  
-Producer = kafka.Producer,
+const readline = require('readline')
+const Kafka = require('kafkajs')
+const fs = require('fs')
+
+//Security credentials and mechanism - unused for the purpose of this POC
+const { KAFKA_USERNAME: username, KAFKA_PASSWORD: password } = process.env
+const sasl = username && password ? { username, password, mechanism: 'plain' } : null
+const ssl = !!sasl
+
+
+// This creates a client instance that is configured to connect to the Kafka broker provided by
+// the environment variable KAFKA_BOOTSTRAP_SERVER
+const kafka = new Kafka({
+  clientId: 'npm-slack-notifier',
+  brokers: [process.env.KAFKA_BOOTSTRAP_SERVER]
+})
+
+const kafkaTopic = 'kafka-producer-consumer'
+
+//Get messages to send to Kafka (using bundled sql dump file for POC)
+allFileContents = fs.readFileSync('broadband-plans.sql', 'utf-')
+
+Producer = kafka.producer()
+producer.connect()
+
 client = new kafka.KafkaClient(),
 producer = new Producer(client);
 
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-producer.on('ready', () => {
-  const waitForUserInput = () => {
-    rl.question('Command: ', (answer) => {
-      if (answer == 'exit') {
-        rl.close();
-      } else if (isNaN(answer)) {
-        waitForUserInput();
-      } else {
-        let payload = [
+allFileContents.split(/\r?\n/).forEach(line => {
+     let payload = [
           {
-            topic: 'topic_stream',
-            messages: answer,
+            topic: kafkaTopic,
+            messages: line,
           }
         ];
-        producer.send(payload, (err, data) => {
-          waitForUserInput();
-        });
-      }
-    });
-    rl.on('SIGINT', () => {
-      rl.close();
-    });
-  }
-  waitForUserInput();
-});
+        producer.send(payload, err, data);
+      })
+const used = process.memoryUsage().heapUsed / 1024 / 1024;
+console.log('memory used: $used')
 
 producer.on('error', (err) => {
   console.log(err);
-});
+})
+
+producer.disconnect()
