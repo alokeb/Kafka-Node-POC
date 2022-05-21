@@ -16,4 +16,3 @@ RUN npm i express socket.io kafka-node
 COPY . .
 
 CMD [ "node", "consumer.js" ]
-

@@ -1,3 +1,4 @@
+#Assuming we're running on a 64-bit VM in this day and age
 FROM docker.io/bitnami/minideb:buster-amd64
 
 LABEL maintainer "Bitnami <containers@bitnami.com>"
