@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "Demo Node.js Producer app for Kafka integration",
     "author": "Aloke Bhatnagar <alokeb@gmail.com>",
-    "main": "server.js",
+    "main": "producer.js",
     "scripts": {
       "start": "node server.js"
     },
