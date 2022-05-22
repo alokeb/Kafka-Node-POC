@@ -2,41 +2,61 @@ version: "2"
 
 #Create an explicit bridge network
 networks:
-  kafka-bridge:
+  bridge:
     driver: bridge
 
 services:
   zookeeper:
     image: docker.io/bitnami/zookeeper:3.8
     networks:
-      - kafka-bridge
+      - bridge
     ports:
       - "2181:2181"
     volumes:
       - "zookeeper_data:/bitnami"
+
     environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      ALLOW_ANONYMOUS_LOGIN: 'yes'
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
 
   kafka:
     image: docker.io/bitnami/kafka:3.2
     networks:
-      - kafka-bridge
+      - bridge
     ports:
       - "9092:9092"
     volumes:
-      - "kafka_data:/bitnami"
+      - "data:/bitnami"
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
+      KAFKA_BROKER_ID: 1
+      KAFKA_CFG_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      #Update per your security needs
+      ALLOW_PLAINTEXT_LISTENER: 'yes'
+      #KAFKA_ZOOKEEPER_PROTOCOL: Authentication protocol for Zookeeper connections. Allowed protocols: PLAINTEXT, SASL, SSL, and SASL_SSL. Defaults: PLAINTEXT.
+      #KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      #KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+      #Not a good idea for production, but allowing for POC
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: true
+
+      #Kraft mode still in early access but the contributors are working on a plan to remove zookeeper depency - something to consider in the future 
+      #KAFKA_ENABLE_KRAFT: Whether to enable Kafka Raft (KRaft) mode. Default: no
+      #KAFKA_KRAFT_CLUSTER_ID: Kafka cluster ID when using Kafka Raft (KRaft). No defaults
     depends_on:
       - zookeeper
 
 volumes:
+  #Using local storage for now. Change settings below for persistent storage
   zookeeper_data:
-    #For persistent storage mount your storage location to /zookeeper/storage
-    # - /path/to/zookeeper-persistence:/zookeeper/storage
+    # - ./zoo/data:/var/lib/zookeeper/data
+    # - ./zoo/log:/var/lib/zookeeper/log
     driver: local
-  kafka_data:
-    #For persistent storage mount your storage location to /kafka/storage
-    # - /path/to/kafka-persistence:/kafka/storage
+  data:
+    #For persistent storage mount your storage location to /kafka/data
+    #- ./kafka/data:/var/lib/kafka/data
     driver: local

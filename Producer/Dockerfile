@@ -1,12 +1,17 @@
-FROM bitnami/node:latest
+FROM node:lts
 
-#Pass auth_tokens etc
-#ARG NPM_TOKEN
-#COPY npmrc /root/.npmrc
+# Create app directory
+WORKDIR /usr/src/kafka_producer
 
-COPY . /kafka_producer
+# Install app dependencies
+COPY package*.json ./
 
-WORKDIR /kafka_producer
 RUN npm install
+#RUN npm i express socket.io kafka-node
+# If you are building your code for production
+# RUN npm ci --only=production
 
-CMD node producer.js
+# Bundle app source
+COPY . .
+
+CMD [ "node", "producer.js" ]
