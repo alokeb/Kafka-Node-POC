@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"uri": "vscode-remote://wsl+ubuntu-20.04/home/aloke/workspace/Kafka-Node-POC"
+		},
+		{
+			"uri": "vscode-remote://wsl+ubuntu-20.04/home/aloke/workspace/bitnami-docker-kafka"
+		}
+	],
+	"remoteAuthority": "wsl+Ubuntu-20.04",
+	"settings": {}
+}
