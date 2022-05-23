@@ -8,12 +8,17 @@ const Consumer = kafka.Consumer,
  consumer = new Consumer(
  client, [ { topic: 'kafka-producer-consumer', partition: 0 } ], { autoCommit: false });
 
-const server = app.listen(port, () => {
-  console.log(`Listening on port ${server.address().port}`);
-});
-const io = require('socket.io')(server, {
-  cors: {
-    origin: '*',
+const consumerGroup = new ConsumerGroupStream(consumerOptions, 'ExampleTopic');
+ 
+const messageTransform = new Transform({
+  objectMode: true,
+  decodeStrings: true,
+  transform (message, encoding, callback) {
+    console.log(`Received message ${message.value} transforming input`);
+    callback(null, {
+      topic: 'RebalanceTopic',
+      messages: `You have been (${message.value}) made an example of`
+    });
   }
 });
 

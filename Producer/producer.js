@@ -29,7 +29,7 @@ let allFileContents = fs.readFileSync('broadband-plans.sql', 'utf-8')
 
 client = new kafka.KafkaClient(),
 producer = new Producer(client);
-
+ 
 allFileContents.split(/\r?\n/).forEach(line => {
      let payload = [
           {
