@@ -1,5 +1,4 @@
 const readline = require('readline')
-const Kafka = require('kafkajs')
 const fs = require('fs')
 
 //Security credentials and mechanism - unused for the purpose of this POC
@@ -15,7 +14,6 @@ const kafka = new Kafka({
   brokers: [process.env.KAFKA_BOOTSTRAP_SERVER]
 })
 
-const kafkaTopic = 'kafka-producer-consumer'
 
 //Get messages to send to Kafka (using bundled sql dump file for POC)
 allFileContents = fs.readFileSync('broadband-plans.sql', 'utf-')
