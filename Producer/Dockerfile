@@ -1,10 +1,11 @@
 FROM node:lts
 
 # Create app directory
+RUN mkdir -p /usr/src/kafka_producer
 WORKDIR /usr/src/kafka_producer
 
 # Install app dependencies
-COPY package*.json ./
+COPY package*.json /usr/src/kafka_producer
 
 RUN npm install
 #RUN npm i express socket.io kafka-node
@@ -12,6 +13,6 @@ RUN npm install
 # RUN npm ci --only=production
 
 # Bundle app source
-COPY . .
+COPY . /usr/src/kafka_producer
 
 CMD [ "node", "producer.js" ]
