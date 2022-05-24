@@ -1,25 +1,39 @@
-'use strict';
+const readline = require('readline');
+const kafka = require('kafka-node'),
+    Producer = kafka.Producer,
+    client = new kafka.KafkaClient(),
+    producer = new Producer(client);
 
-const readline = require('readline')
-const fs = require('fs')
-const Transform = require('stream').Transform;
-const ProducerStream = require('./lib/producerStream')
-const _ = require('lodash')
-const kafkaTopic = 'kafka-producer-consumer'
-const producer = new ProducerStream()
-
-var stdinTransform = new Transform({
-  objectMode: true,
-  decodeStrings: true,
-  transform (text, encoding, callback) {
-    text = _.trim(text);
-    console.log(`pushing message ${text} to ExampleTopic`);
-    callback(null, {
-      topic: kafkaTopic,
-      messages: text
+var rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+producer.on('ready', () => {
+  const waitForUserInput = () => {
+    rl.question('Command: ', (answer) => {
+      if (answer == 'exit'){
+        rl.close();
+      } else if(isNaN(answer)) {
+        waitForUserInput();
+      } else {
+        let payload = [
+          {
+            topic: 'topic_stream',
+            messages: answer,
+          }
+        ];
+        producer.send(payload, (err, data) => {
+          waitForUserInput();
+        });
+      }
+    });
+    rl.on('SIGINT', () => {
+      rl.close();
     });
   }
+  waitForUserInput();
 });
-
-process.stdin.setEncoding('utf8');
-process.stdin.pipe(stdinTransform).pipe(producer);
+ 
+producer.on('error', (err) => {
+  console.log(err);
+});
