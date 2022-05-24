@@ -4,7 +4,7 @@ const port = 3000;
 const app = express();
 
 const Consumer = kafka.Consumer,
- client = new kafka.KafkaClient('localhost:9092'),
+ client = new kafka.KafkaClient('localhost:29092'),
  consumer = new Consumer(
  client, [ { topic: 'topic_stream', partition: 0 } ], { autoCommit: false });
 
