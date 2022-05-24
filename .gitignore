@@ -2,3 +2,4 @@
 Local-workspace.code-workspace
 workspace-Ubuntu.code-workspace
 node_modules/
+kafka-node/
