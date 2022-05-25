@@ -8,7 +8,6 @@ WORKDIR /usr/src/kafka_consumer
 COPY . /usr/src/kafka_consumer/
 
 # Install app dependencies
-RUN npm i --package-lock-only
 COPY package*.json /usr/src/kafka_consumer/
 
 RUN npm install
