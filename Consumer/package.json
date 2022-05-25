@@ -5,7 +5,7 @@
     "author": "Aloke Bhatnagar <alokeb@gmail.com>",
     "main": "consumer.js",
     "scripts": {
-      "start": "node server.js"
+      "start": "node consumer.js"
     },
     "dependencies": {
       "express": "^4.16.1",

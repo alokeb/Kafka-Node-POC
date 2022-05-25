@@ -1,4 +1,4 @@
-onst kafka = require('kafka-node');
+const kafka = require('kafka-node');
 const client = new kafka.KafkaClient({
   kafkaHost:
     process.env.ENVIRONMENT === 'local'

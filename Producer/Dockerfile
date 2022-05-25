@@ -17,4 +17,4 @@ RUN npm install
 
 
 
-CMD [ "node", "start" ]
+CMD [ "node", "producer.js" ]
