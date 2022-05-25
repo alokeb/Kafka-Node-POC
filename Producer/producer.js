@@ -1,7 +1,7 @@
 const readline = require('readline');
 const kafka = require('kafka-node'),
     Producer = kafka.Producer,
-    client = new kafka.KafkaClient('localhost:9092'),
+    client = new kafka.KafkaClient(),
     producer = new Producer(client);
 
 var rl = readline.createInterface({
