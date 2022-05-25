@@ -1,30 +1,29 @@
-const kafka = require('kafka-node');
-const express = require('express');
-const port = 3000;
-const app = express();
-
-const Consumer = kafka.Consumer,
- client = new kafka.KafkaClient('localhost:29092'),
- consumer = new Consumer(
- client, [ { topic: 'topic_stream', partition: 0 } ], { autoCommit: false });
-
-const server = app.listen(port, () => {
-  console.log(`Listening on port ${server.address().port}`);
+onst kafka = require('kafka-node');
+const client = new kafka.KafkaClient({
+  kafkaHost:
+    process.env.ENVIRONMENT === 'local'
+      ? process.env.INTERNAL_KAFKA_ADDR
+      : process.env.EXTERNAL_KAFKA_ADDR,
 });
-const io = require('socket.io')(server, {
-  cors: {
-    origin: '*',
-  }
+const Consumer = kafka.Consumer;
+
+const consumer = new Consumer(
+  client,
+  [
+    {
+      topic: process.env.TOPIC,
+      partition: 0,
+    },
+  ],
+  {
+    autoCommit: false,
+  },
+);
+
+consumer.on('message', message => {
+  console.log(message);
 });
 
-io.on('connection', client => {
-  console.log('Connected', client);
-
-consumer.on('message', function (message) {
-    client.emit('request', message.value);
-  });
-
-client.on('disconnect', () => { 
-    console.log('Client disconnected');
- });
+consumer.on('error', err => {
+  console.log(err);
 });

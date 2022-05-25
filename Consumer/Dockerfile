@@ -1,10 +1,11 @@
-FROM node:lts
+FROM node:alpine
 
 # Create app directory
 RUN mkdir -p /usr/src/kafka_consumer
 WORKDIR /usr/src/kafka_consumer
 
 # Install app dependencies
+RUN npm i --package-lock-only
 COPY package*.json /usr/src/kafka_consumer/
 
 RUN npm install

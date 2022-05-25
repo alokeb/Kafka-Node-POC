@@ -1,10 +1,13 @@
-FROM node:lts
+FROM node:alpine
 
 # Create app directory
 RUN mkdir -p /usr/src/kafka_producer
 WORKDIR /usr/src/kafka_producer
 
+# Bundle app source
+COPY . /usr/src/kafka_producer
 # Install app dependencies
+RUN npm i --package-lock-only
 COPY package*.json /usr/src/kafka_producer
 
 RUN npm install
@@ -12,7 +15,6 @@ RUN npm install
 # If you are building your code for production
 # RUN npm ci --only=production
 
-# Bundle app source
-COPY . /usr/src/kafka_producer
 
-CMD [ "node", "producer.js" ]
+
+CMD [ "node", "start" ]

@@ -1,39 +1,32 @@
-const readline = require('readline');
-const kafka = require('kafka-node'),
-    Producer = kafka.Producer,
-    client = new kafka.KafkaClient(),
-    producer = new Producer(client);
+const kafka = require('kafka-node');
+const client = new kafka.KafkaClient({
+  kafkaHost:
+    process.env.ENVIRONMENT === 'local'
+      ? process.env.INTERNAL_KAFKA_ADDR
+      : process.env.EXTERNAL_KAFKA_ADDR,
+});
+const Producer = kafka.Producer;
+const producer = new Producer(client);
 
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
 producer.on('ready', () => {
-  const waitForUserInput = () => {
-    rl.question('Command: ', (answer) => {
-      if (answer == 'exit'){
-        rl.close();
-      } else if(isNaN(answer)) {
-        waitForUserInput();
-      } else {
-        let payload = [
-          {
-            topic: 'topic_stream',
-            messages: answer,
-          }
-        ];
-        producer.send(payload, (err, data) => {
-          waitForUserInput();
-        });
+  setInterval(() => {
+    const payloads = [
+      {
+        topic: process.env.TOPIC,
+        messages: [`${process.env.TOPIC}_message_${Date.now()}`],
+      },
+    ];
+
+    producer.send(payloads, (err, data) => {
+      if (err) {
+        console.log(err);
       }
+      console.log(data);
     });
-    rl.on('SIGINT', () => {
-      rl.close();
-    });
-  }
-  waitForUserInput();
+  
+  }, 5000); //Sends a message every 5 seconds...
 });
- 
-producer.on('error', (err) => {
+
+producer.on('error', err => {
   console.log(err);
 });
