@@ -5,25 +5,18 @@ const client = new kafka.KafkaClient({
       ? process.env.INTERNAL_KAFKA_ADDR
       : process.env.EXTERNAL_KAFKA_ADDR,
 });
-const Consumer = kafka.Consumer;
+const Admin = kafka.Admin;
+const child_process = require('child_process');
 
-const consumer = new Consumer(
-  client,
-  [
-    {
-      topic: process.env.TOPIC,
-      partition: 0,
-    },
-  ],
-  {
-    autoCommit: false,
-  },
-);
-
-consumer.on('message', message => {
-  console.log(message);
-});
-
-consumer.on('error', err => {
-  console.log(err);
-});
+const admin = new Admin(client);
+const interval_id = setInterval(() => {
+  admin.listTopics((err, res) => {
+    if (res[1].metadata[process.env.TOPIC]) {
+      console.log('Kafka topic created');
+      clearInterval(interval_id);
+      child_process.execSync('npm start', { stdio: 'inherit' });
+    } else {
+      console.log('Waiting for Kafka topic to be created');
+    }
+  });
+}, 1000);

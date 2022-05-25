@@ -1,5 +1,6 @@
 version: '3'
 services:
+
   zookeeper:
     ports:
       - '50000:2181'
@@ -7,6 +8,7 @@ services:
     environment:
       #Not for production
       ALLOW_ANONYMOUS_LOGIN: yes
+
   kafka:
     ports:
       - '50001:9092'
@@ -29,6 +31,7 @@ services:
     image: bitnami/kafka:latest
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
+
   producer:
     depends_on:
       - kafka
@@ -38,6 +41,7 @@ services:
       INTERNAL_KAFKA_ADDR: 'kafka:9092'
     build:
       context: ./Producer
+
   consumer:
     depends_on:
       - kafka
