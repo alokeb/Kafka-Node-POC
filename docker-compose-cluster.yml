@@ -31,6 +31,7 @@ services:
     image: bitnami/kafka:latest
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/var/run/kafka/0/:/bitnami/kafka'
 
   kafka-1:
     ports:
@@ -54,6 +55,7 @@ services:
     image: bitnami/kafka:latest
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/var/run/kafka/1/:/bitnami/kafka'
     
   kafka-2:
     ports:
@@ -77,6 +79,7 @@ services:
     image: bitnami/kafka:latest
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/var/run/kafka/2/:/bitnami/kafka'
 
   producer:
     depends_on:
