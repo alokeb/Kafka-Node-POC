@@ -34,6 +34,11 @@ services:
       ZOOKEEPER_SERVERS: zookeeper:2888:3888
       #Not for production
       ALLOW_ANONYMOUS_LOGIN: yes
+    #Persistent storage - make sure appropriate persmissions are set on the host
+    #volumes:
+      #- '/var/run/docker.sock:/var/run/docker.sock'
+      #- '/bitnami/zookeeper/:/opt/zookeper/'
+
 
       #Example settings for roduction
     # - ZOO_ENABLE_AUTH=yes
@@ -53,7 +58,7 @@ services:
       - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9091
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_BROKER_ID=1
-      - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+      - BOOTSTRAP_SERVERS=kafka1:9091
       - ZOOKEEPER=zookeeper:2181
 
       #Not for production
@@ -74,9 +79,8 @@ services:
 
     #Persistent storage - should be turned on for production, make sure to have appropriate permissions on host - not duplicating in every broker config for brevity but should be done
     #volumes:
-    #  - '/var/run/docker.sock:/var/run/docker.sock'
-    
-    #- '/var/run/kafka/0/:/opt/kafka/1/'
+      #- '/var/run/docker.sock:/var/run/docker.sock'
+      #- '/var/run/kafka/0/:/opt/kafka/1/'
 
     #External properties file based configuration
     #- /path/to/server.properties:/bitnami/kafka/config/server.properties
@@ -87,6 +91,7 @@ services:
         test: ps augwwx | egrep [S]upportedKafka
       depends_on:
       - zookeeper
+      - kafka1
       ports:
       - "9092:9092"
       environment:
@@ -94,7 +99,7 @@ services:
         - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
         - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
         - KAFKA_BROKER_ID=2
-        - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+        - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092
         - ZOOKEEPER=zookeeper:2181
 
         #Not for production
@@ -108,6 +113,8 @@ services:
       test: ps augwwx | egrep [S]upportedKafka
     depends_on:
     - zookeeper
+    - kafka1
+    - kafka2
     ports:
       - "9093:9093"
     environment:
@@ -115,7 +122,7 @@ services:
       - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9093
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_BROKER_ID=3
-      - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+      - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093
       - ZOOKEEPER=zookeeper:2181
 
       #Not for production
@@ -129,14 +136,17 @@ services:
       test: ps augwwx | egrep [S]upportedKafka
     depends_on:
     - zookeeper
+    - kafka1
+    - kafka2
+    - kafka4
     ports:
     - "9094:9094"
     environment:
     - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka4:9094
     - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9094
     - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-    - KAFKA_BROKER_ID=4
-    - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+    - KAFKA_BROKER_ID=4kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094
+    - BOOTSTRAP_SERVERS=
     - ZOOKEEPER=zookeeper:2181      
   
     #Not for production
@@ -151,6 +161,10 @@ services:
       test: ps augwwx | egrep [S]upportedKafka
     depends_on:
     - zookeeper
+    - kafka1
+    - kafka2
+    - kafka3
+    - kafka4
     ports:
     - "9095:9095"
     environment:
