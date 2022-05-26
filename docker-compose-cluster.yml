@@ -1,5 +1,6 @@
 version: '3'
-
+# This is meant only to be an example for a kafka cluster setup using bitnami's kafka/zookeeper images as they are pretty close to vanilla kafka and very well documented - please take note of available settings
+# and documentation at https://github.com/bitnami/bitnami-docker-kafka
 # Ports:
 # - description: Major ports are exposed to host computer
 # - zookeeper: 2181
