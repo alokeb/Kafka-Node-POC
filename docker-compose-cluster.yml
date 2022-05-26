@@ -1,13 +1,24 @@
 version: '3'
-services:
 
+networks:
+  app-tier:
+    driver: bridge
+
+services:
   zookeeper:
     ports:
       - '50000:2181'
     image: bitnami/zookeeper:latest
+    networks:
+      - app-tier
     environment:
       #Not for production
       ALLOW_ANONYMOUS_LOGIN: yes
+
+      #Example settings for roduction
+    # - ZOO_ENABLE_AUTH=yes
+    # - ZOO_SERVER_USERS=kafka
+    # - ZOO_SERVER_PASSWORDS=kafka_password
 
   kafka-0:
     ports:
@@ -28,10 +39,30 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
       KAFKA_CREATE_TOPICS: 'example-topic:1:1'
       ALLOW_PLAINTEXT_LISTENER: yes
+
+      #Basic security options for production - update per your settings - for sake of readability only commenting in kafka-0, but will have to be done for all instances...
+      #KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP:INTERNAL:SSL,CLIENT:SASL_SSL
+      #KAFKA_CFG_LISTENERS=INTERNAL://:9093,CLIENT://:9092
+      #KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka:9093,CLIENT://kafka:9092
+      #KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      #KAFKA_CLIENT_USERS=user
+      #KAFKA_CLIENT_PASSWORDS=password
+      #KAFKA_ZOOKEEPER_PROTOCOL: SASL.
+      #KAFKA_ZOOKEEPER_USER: Apache Kafka Zookeeper user for SASL authentication. No defaults.
+      #KAFKA_ZOOKEEPER_PASSWORD: Apache Kafka Zookeeper user password for SASL authentication. No defaults.
+      
     image: bitnami/kafka:latest
+    #Update for production
+    hostname: localhost
+    networks:
+      - app-tier
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-      - '/var/run/kafka/0/:/bitnami/kafka'
+      #Persistent storage - make sure appropriate permissions are set
+      - '/var/run/kafka/0/:/opt/kafka/0/'
+
+      #External properties file based configuration
+      #- /path/to/server.properties:/bitnami/kafka/config/server.properties
 
   kafka-1:
     ports:
@@ -53,9 +84,13 @@ services:
       KAFKA_CREATE_TOPICS: 'example-topic:1:1'
       ALLOW_PLAINTEXT_LISTENER: yes
     image: bitnami/kafka:latest
+    #Update for production
+    hostname: localhost
+    networks:
+      - app-tier
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-      - '/var/run/kafka/1/:/bitnami/kafka'
+      - '/var/run/kafka/1/:/opt/kafka/1/'
     
   kafka-2:
     ports:
@@ -77,13 +112,20 @@ services:
       KAFKA_CREATE_TOPICS: 'example-topic:1:1'
       ALLOW_PLAINTEXT_LISTENER: yes
     image: bitnami/kafka:latest
+
+    #Update for production
+    hostname: localhost
+    networks:
+      - app-tier  
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-      - '/var/run/kafka/2/:/bitnami/kafka'
+      - '/var/run/kafka/2/:/opt/kafka/2/'
 
   producer:
     depends_on:
-      - kafka
+      - kafka-0
+      - kafka-1
+      - kafka-2
     environment:
       #Kafka
       TOPIC: example-topic
@@ -94,7 +136,9 @@ services:
 
   consumer:
     depends_on:
-      - kafka
+      - kafka-0
+      - kafka-1
+      - kafka-2
     environment:
       TOPIC: example-topic
       ENVIRONMENT: local
