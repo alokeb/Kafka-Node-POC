@@ -1,17 +1,36 @@
 version: '3'
 
-networks:
-  app-tier:
-    driver: bridge
+# Ports:
+# - description: Major ports are exposed to host computer
+# - zookeeper: 2181
+#      kafka1: 9091
+#      kafka2: 9092
+#      kafka3: 9093
+#      kafka4: 9094
+#      kafka5: 9095
+# Tips:>
+#   - You can up part of the cluster with this command.
+#     $ docker-compose up -d kafka1 kafka2 kafka3
 
 services:
   zookeeper:
     ports:
-      - '50000:2181'
+    - "2181:2181"
+    - "2888:2888"
+    - "3888:3888"
     image: bitnami/zookeeper:latest
-    networks:
-      - app-tier
+    healthcheck:
+      test: echo stat | nc localhost 2181
+      interval: 10s
+      timeout: 10s
+      retries: 3
     environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper:2888:3888
       #Not for production
       ALLOW_ANONYMOUS_LOGIN: yes
 
@@ -20,27 +39,28 @@ services:
     # - ZOO_SERVER_USERS=kafka
     # - ZOO_SERVER_PASSWORDS=kafka_password
 
-  kafka-0:
-    ports:
-      - '50001:9092'
-      - '50002:9093'
+  kafka-1:
+    image: bitnami/kafka:latest
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka
     depends_on:
-      - zookeeper
+    - zookeeper
+    ports:
+    - "9091:9091"
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_CFG_BROKER_ID: 0
-      KAFKA_LISTENERS: 'INTERNAL://:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT'
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
-      KAFKA_ADVERTISED_HOST_NAME: host.docker.internal # change to 172.17.0.1 if running on Ubuntu
-      #Not for production
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
-      KAFKA_CREATE_TOPICS: 'example-topic:1:1'
-      ALLOW_PLAINTEXT_LISTENER: yes
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka1:9091
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9091
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_BROKER_ID=1
+      - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+      - ZOOKEEPER=zookeeper:2181
 
-      #Basic security options for production - update per your settings - for sake of readability only commenting in kafka-0, but will have to be done for all instances...
+      #Not for production
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      
+      #Basic security options for production - update per your settings - for sake of readability only commenting in this broker, but will have to be done for all instances...
       #KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP:INTERNAL:SSL,CLIENT:SASL_SSL
       #KAFKA_CFG_LISTENERS=INTERNAL://:9093,CLIENT://:9092
       #KAFKA_CFG_ADVERTISED_LISTENERS=INTERNAL://kafka:9093,CLIENT://kafka:9092
@@ -50,99 +70,97 @@ services:
       #KAFKA_ZOOKEEPER_PROTOCOL: SASL.
       #KAFKA_ZOOKEEPER_USER: Apache Kafka Zookeeper user for SASL authentication. No defaults.
       #KAFKA_ZOOKEEPER_PASSWORD: Apache Kafka Zookeeper user password for SASL authentication. No defaults.
-      
-    image: bitnami/kafka:latest
-    #Update for production
-    hostname: localhost
-    networks:
-      - app-tier
-    volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
-      #Persistent storage - make sure appropriate permissions are set
-      - '/var/run/kafka/0/:/opt/kafka/0/'
 
-      #External properties file based configuration
-      #- /path/to/server.properties:/bitnami/kafka/config/server.properties
-
-  kafka-1:
-    ports:
-      - '50003:9092'
-      - '50004:9093'
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_CFG_BROKER_ID: 1
-      KAFKA_LISTENERS: 'INTERNAL://:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT'
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
-      KAFKA_ADVERTISED_HOST_NAME: host.docker.internal # change to 172.17.0.1 if running on Ubuntu
-      #Not for production
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
-      KAFKA_CREATE_TOPICS: 'example-topic:1:1'
-      ALLOW_PLAINTEXT_LISTENER: yes
-    image: bitnami/kafka:latest
-    #Update for production
-    hostname: localhost
-    networks:
-      - app-tier
-    volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
-      - '/var/run/kafka/1/:/opt/kafka/1/'
+    #Persistent storage - should be turned on for production, make sure to have appropriate permissions on host - not duplicating in every broker config for brevity but should be done
+    #volumes:
+    #  - '/var/run/docker.sock:/var/run/docker.sock'
     
+    #- '/var/run/kafka/0/:/opt/kafka/1/'
+
+    #External properties file based configuration
+    #- /path/to/server.properties:/bitnami/kafka/config/server.properties
+
   kafka-2:
-    ports:
-      - '50005:9092'
-      - '50006:9093'
-    depends_on:
+      image: bitnami/kafka:latest
+      healthcheck:
+        test: ps augwwx | egrep [S]upportedKafka
+      depends_on:
       - zookeeper
-    environment:
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_CFG_BROKER_ID: 2
-      KAFKA_LISTENERS: 'INTERNAL://:9092'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://:9092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT'
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: '1'
-      KAFKA_ADVERTISED_HOST_NAME: host.docker.internal # change to 172.17.0.1 if running on Ubuntu
-      #Not for production
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
-      KAFKA_CREATE_TOPICS: 'example-topic:1:1'
-      ALLOW_PLAINTEXT_LISTENER: yes
+      ports:
+      - "9092:9092"
+      environment:
+        - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka2:9092
+        - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+        - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+        - KAFKA_BROKER_ID=2
+        - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+        - ZOOKEEPER=zookeeper:2181
+
+        #Not for production
+        - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+        - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+        - ALLOW_PLAINTEXT_LISTENER=yes
+
+  kafka-3:
     image: bitnami/kafka:latest
-
-    #Update for production
-    hostname: localhost
-    networks:
-      - app-tier  
-    volumes:
-      - '/var/run/docker.sock:/var/run/docker.sock'
-      - '/var/run/kafka/2/:/opt/kafka/2/'
-
-  producer:
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka
     depends_on:
-      - kafka-0
-      - kafka-1
-      - kafka-2
+    - zookeeper
+    ports:
+      - "9093:9093"
     environment:
-      #Kafka
-      TOPIC: example-topic
-      ENVIRONMENT: local
-      INTERNAL_KAFKA_ADDR: 'kafka:9092'
-    build:
-      context: ./Producer
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka3:9093
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9093
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_BROKER_ID=3
+      - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+      - ZOOKEEPER=zookeeper:2181
 
-  consumer:
+      #Not for production
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - ALLOW_PLAINTEXT_LISTENER=yes
+
+  kafka-4:
+    image: bitnami/kafka:latest
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka
     depends_on:
-      - kafka-0
-      - kafka-1
-      - kafka-2
+    - zookeeper
+    ports:
+    - "9094:9094"
     environment:
-      TOPIC: example-topic
-      ENVIRONMENT: local
-      INTERNAL_KAFKA_ADDR: 'kafka:9092'
-    build:
-      context: ./Consumer
-volumes: {}
+    - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka4:9094
+    - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9094
+    - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+    - KAFKA_BROKER_ID=4
+    - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+    - ZOOKEEPER=zookeeper:2181      
+  
+    #Not for production
+    - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    - ALLOW_PLAINTEXT_LISTENER=yes
+
+
+  kafka-5:
+    image: bitnami/kafka:latest
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka
+    depends_on:
+    - zookeeper
+    ports:
+    - "9095:9095"
+    environment:
+    - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka5:9095
+    - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9095
+    - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+    - KAFKA_BROKER_ID=5
+    - BOOTSTRAP_SERVERS=kafka1:9091,kafka2:9092,kafka3:9093,kafka4:9094,kafka5:9095
+    - ZOOKEEPER=zookeeper:2181
+      
+    #Not for production
+    - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    - ALLOW_PLAINTEXT_LISTENER=yes
